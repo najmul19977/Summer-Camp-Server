@@ -31,9 +31,10 @@ async function run() {
     const popularClassCollection = client.db("summerCampDb").collection("popularclass");
     const allInstractorCollection = client.db("summerCampDb").collection("allInstractor");
     const popularInstractorCollection = client.db("summerCampDb").collection("popularInstractor");
+    const cartCollection = client.db("summerCampDb").collection("carts");
     
 
-
+ //get data
     app.get('/allclass',async(req,res) =>{
         const result = await allClassCollection.find().toArray();
         res.send(result);
@@ -50,7 +51,16 @@ async function run() {
     app.get('/popularInstractor',async(req,res) =>{
         const result = await popularInstractorCollection.find().toArray();
         res.send(result);
+    });
+
+    // cart collection
+    app.post('/carts',async(req,res) =>{
+      const item = req.body;
+      console.log(item);
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
     })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

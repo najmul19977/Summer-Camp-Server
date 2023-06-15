@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb://${process.env.DB_USER}:${process.env.DB_PASS}@ac-56gcpdx-shard-00-00.mgbkpcq.mongodb.net:27017,ac-56gcpdx-shard-00-01.mgbkpcq.mongodb.net:27017,ac-56gcpdx-shard-00-02.mgbkpcq.mongodb.net:27017/?ssl=true&replicaSet=atlas-neronq-shard-0&authSource=admin&retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -32,7 +32,13 @@ async function run() {
     const allInstractorCollection = client.db("summerCampDb").collection("allInstractor");
     const popularInstractorCollection = client.db("summerCampDb").collection("popularInstractor");
     const cartCollection = client.db("summerCampDb").collection("carts");
-    
+    const usersCollection = client.db("summerCampDb").collection("users");
+  // user relatet api
+    app.post('/users',async(req,res) =>{
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    })  
 
  //get data
     app.get('/allclass',async(req,res) =>{
@@ -53,11 +59,26 @@ async function run() {
         res.send(result);
     });
 
-    // cart collection
+    // cart collection apis
+    app.get('/carts',async(req,res) =>{
+      const email =req.query.email;
+      if(!email){
+        res.send([]);
+      }
+      const query = {email:email};
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
     app.post('/carts',async(req,res) =>{
       const item = req.body;
       console.log(item);
       const result = await cartCollection.insertOne(item);
+      res.send(result);
+    });
+    app.delete('/carts/:id',async(req,res) =>{
+      const id = req.params.id
+      const query = {_id:new ObjectId(id)};
+      const result = await cartCollection.deleteOne(query);
       res.send(result);
     })
 

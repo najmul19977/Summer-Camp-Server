@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
@@ -33,12 +34,44 @@ async function run() {
     const popularInstractorCollection = client.db("summerCampDb").collection("popularInstractor");
     const cartCollection = client.db("summerCampDb").collection("carts");
     const usersCollection = client.db("summerCampDb").collection("users");
+
+    app.post('/jwt',(req,res) =>{
+      const user = req.body;
+      const token = jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{ expiresIn:'1h'})
+      res.send({token})
+    })
   // user relatet api
+    app.get('/users',async(req,res) =>{
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    
     app.post('/users',async(req,res) =>{
       const user = req.body;
+     
+      const query = {email:user.email}
+      const existingUser = await usersCollection.findOne(user);
+    
+      if(existingUser){
+        return res.send({message:'user already exists'})
+      }
       const result = await usersCollection.insertOne(user);
       res.send(result);
-    })  
+    });
+    
+    app.patch('/users/admin/:id',async(req,res) =>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updateDoc = {
+        $set:{
+          role:'admin'
+        },
+      };
+      const result = await usersCollection.updateOne(filter,updateDoc);
+      res.send(result);
+    })
+
 
  //get data
     app.get('/allclass',async(req,res) =>{

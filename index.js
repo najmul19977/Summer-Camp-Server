@@ -116,6 +116,18 @@ async function run() {
         const result = await allClassCollection.find().toArray();
         res.send(result);
     });
+  // add new class 
+    app.post('/allclass',verifyJWT,verifyAdmin, async(req,res) =>{
+      const newItem = req.body;
+      const result = await allClassCollection.insertOne(newItem);
+      res.send(result);
+    });
+    app.delete ('/allclass/:id',verifyJWT,verifyAdmin,async(req,res) =>{
+      const id = req.params.id;
+      const query = {_id:new ObjectId(id)}
+      const result = await allClassCollection.deleteOne(query);
+      res.send(result);
+    })
 
     app.get('/popularclass',async(req,res) =>{
         const result = await popularClassCollection.find().toArray();
